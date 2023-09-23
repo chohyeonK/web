@@ -1,0 +1,110 @@
+<div class="row my-5">
+    <div class="col">
+        <h1 class="text-center">지역검색</h1>
+        <div class="row justify-content-end my-2">
+            <form class="col-6 col-m-4 col-l-3" name="frm">
+                <div class="input-group">
+                    <input class="form-control" name="query" value="인하대학교">
+                    <button class="btn btn-primary">검색</button>
+                </div>
+            </form>
+        </div>
+        <div id="div_locals"></div>
+
+        <!-- 페이지 이동 버튼 -->
+        <div class="text-center">
+            <button id="prev" class="btn btn-primary">이전</button>
+            <span id="span_page" class="mx-3">1/10</span>
+            <button id="next" class="btn btn-primary">다음</button>
+        </div>
+
+        <!-- 지도 출력 -->
+        <div id="map" style="width:100%;height:400px;" class="my-5"></div>
+    </div>
+</div>
+
+<script type="x-handlebars-template" id="temp_locals">
+    <table class="table table-striped">
+        {{#each documents}}
+            <tr>
+                <td>{{place_name}}</td>
+                <td>{{address_name}}</td>
+                <td>{{phone}}</td>
+                <td><button class="btn btn-primary" x="{{x}}" y="{{y}}">위치보기</td>
+            </tr>
+        {{/each}}
+    </table>
+</script>
+
+<script>
+    let query = $(frm.query).val();
+    let page = 1;
+    let size = 5;
+    getLocals();
+
+    function getLocals() {
+        $.ajax({
+            type: "get",
+            url: "https://dapi.kakao.com/v2/local/search/keyword.json",
+            headers: {
+                "Authorization": 'KakaoAK 4bd49664276814dcb7b781c356330e86'
+            },
+            data: { query: query, page: page, size: size },
+            success: function(data) {
+                console.log('data', data);
+                let temp = Handlebars.compile($("#temp_locals").html());
+                $('#div_locals').html(temp(data)); // 괄호 채우기
+
+                let last = Math.ceil(data.meta.pageable_count/size);
+                $('#span_page').html(page + "/" + last);
+
+                if (page == 1) $("#prev").attr("disabled", true);
+                else $("#prev").attr("disabled", false);
+
+                if (data.meta.is_end) $("#next").attr("disabled", true);
+                else $("#next").attr("disabled", false);
+            }
+        });
+    }
+
+    $(frm).on("submit", function(e) {
+        event.preventDefault(); // submit 이벤트를 막아줌
+        query = $(frm.query).val();
+        page = 1;
+        getLocals();
+    })
+
+    // 다음 버튼 클릭한 경우
+    $("#next").on("click", function(e) {
+        page++;
+        getLocals();
+    })
+
+    // 이전 버튼 클릭한 경우
+    $("#prev").on("click", function(e) {
+        page--;
+        getLocals();
+    })
+
+    // 위치보기 버튼 클릭 시
+    $("#div_locals").on("click", ".btn-primary", function(e) {
+        let x = $(this).attr('x');
+        let y = $(this).attr('y');
+
+        var container = document.getElementById('map'); //지도를 담을 영역의 DOM 레퍼런스
+        var options = { //지도를 생성할 때 필요한 기본 옵션
+            center: new kakao.maps.LatLng(y, x), //지도의 중심좌표.
+            level: 3 //지도의 레벨(확대, 축소 정도)
+        };
+
+        var map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
+
+        // 지도를 클릭한 위치에 표출할 마커입니다
+        var marker = new kakao.maps.Marker({ 
+            // 지도 중심좌표에 마커를 생성합니다 
+            position: map.getCenter() 
+        }); 
+        // 지도에 마커를 표시합니다
+        marker.setMap(map);
+    })
+</script>
