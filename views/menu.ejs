@@ -14,10 +14,33 @@
                 </li>
             </ul>
             <ul class="navbar-nav d-flex">
-                <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/login">로그인</a>
+                <li class="nav-item" id="login">
+                    <a class="nav-link active" aria-current="page" href="/users/login">로그인</a>
+                </li>
+
+                <li class="nav-item" id="email" style="display: none;">
+                    <a class="nav-link active" aria-current="page" href="/books">email</a>
+                </li>
+                <li class="nav-item" id="logout" style="display: none;">
+                    <a class="nav-link active" aria-current="page" href="/locals">로그아웃</a>
                 </li>
             </ul>
         </div>
     </div>
 </nav>
+
+<script>
+    if (sessionStorage.getItem("email")) {
+        $("#login, #email, #logout").toggle();
+        $("#email a").html(sessionStorage.getItem("email"));
+    }
+
+    // 로그아웃 메뉴 클릭 시
+    $("#logout").on("click", "a", function(e) {
+        event.defaultPrevented; // a 태그 이동 안되도록
+        if (confirm("로그아웃 하실래요?")) {
+            sessionStorage.clear();
+            window.location = '/';
+        }
+    })
+</script>
