@@ -1,0 +1,48 @@
+<div class="my-5">
+    <h1 class="text-center mb-5">즐겨찾기</h1>
+    <div id="div_favorite"></div>
+</div>
+
+<script type="x-handlebars-template" id="temp_favorite">
+    <table class="table table-striped table-hover">
+        {{#each .}} <!-- 배열 이름이 없기 때문에 ., 시험 -->
+            <tr>
+                <td>{{ id }}</td>
+                <td>{{ place_name }}</td>
+                <td>{{ phone }}</td>
+                <td>{{ address_name }}</td>
+                <td><button class="btn btn-danger btn-sm" id="{{id}}">삭제</button></td>
+            </tr>
+        {{/each}}
+    </table>
+</script>
+
+<script type="module">
+import { app } from "/javascripts/firebase.js"
+import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+const db = getDatabase(app); // 설정앱
+const ref_favorite = ref(db, `favorite/${sessionStorage.getItem("uid")}`);
+
+// 장바구니에 저장되어 있는 도서 목록 가져오기
+onValue(ref_favorite, result => {
+    let items = [];
+    result.forEach(item => {
+        // console.log('key', item.key, 'value', item.val());
+        items.push(item.val());
+    })
+    // console.log('items', items);
+
+    const temp = Handlebars.compile($("#temp_favorite").html());
+    $("#div_favorite").html(temp(items));
+});
+
+// 삭제 버튼 클릭
+$("#div_favorite").on("click", ".btn-danger", async function() {
+        const id = $(this).attr("id");
+        if (!confirm(`${id}번 즐겨찾기를 삭제할래요?`)) return;
+        const ref_favorite = ref(db, `favorite/${sessionStorage.getItem("uid")}/${id}`);
+        await remove(ref_favorite); // 삭제 후 onValue 자동 실행하여 남아있는 데이터 가져옴
+        alert("삭제되었습니다.");
+    });
+</script>

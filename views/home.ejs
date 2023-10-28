@@ -73,19 +73,36 @@
 </script>
 
 
-<script>
+<script type="module"> // 시험
+    import { app } from "/javascripts/firebase.js"
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+    const db = getDatabase(app); // 설정앱
     let query = $(frm.query).val();
     let page = 1;
     getBooks();
 
     // 장바구니를 클릭한 경우
-    $("#div_books").on("click", ".bi", function() {
+    $("#div_books").on("click", ".bi", async function() {
         if(!sessionStorage.getItem("email")) {
             window.location = "/users/login";
         } else {
             // 장바구니에 등록
-            const books = JSON.parse($(this).attr("book"));
-            console.log('books', books);
+            const book = JSON.parse($(this).attr("book"));
+            // console.log('book', book);
+
+            // 저장할 위치
+            const ref_cart = ref(db, `cart/${sessionStorage.getItem("uid")}/${book.isbn}`);
+            const result = await get(ref_cart);
+
+            // 장바구니에 있는지 체크
+            if (result.val()) {
+                alert("이미 장바구니에 있습니다.");
+            } else {
+                if (!confirm("장바구니에 추가하시겠습니까?")) return false;
+                set(ref_cart, book);
+                alert("장바구니에 추가되었습니다.");
+            }
         }
     });
 

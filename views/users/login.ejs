@@ -52,7 +52,11 @@ $(frm).on("submit", function(e) {
                 sessionStorage.setItem('email', email);
                 sessionStorage.setItem('uid', success.user.uid);
 
-                window.location = "/";
+                if (sessionStorage.getItem('target')) {
+                    location.href = sessionStorage.getItem('target');
+                } else {
+                    window.location = "/";
+                }
             })
             .catch((error) => {
                 // const errorCode = error.code;

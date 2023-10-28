@@ -30,13 +30,24 @@
                 <td>{{place_name}}</td>
                 <td>{{address_name}}</td>
                 <td>{{phone}}</td>
-                <td><button class="btn btn-primary" x="{{x}}" y="{{y}}">위치보기</td>
+                <td><button class="btn btn-primary location" x="{{x}}" y="{{y}}">위치보기</td>
+                <td><button class="btn btn-primary btn-sm favorite" local="{{toString @this}}">즐겨찾기</button></td>
             </tr>
         {{/each}}
     </table>
 </script>
 
 <script>
+    Handlebars.registerHelper("toString", function(local) {
+        return JSON.stringify(local);
+    })
+</script>
+
+<script type="module">
+    import { app } from "/javascripts/firebase.js"
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+    const db = getDatabase(app); // 설정앱
     let query = $(frm.query).val();
     let page = 1;
     let size = 5;
@@ -87,7 +98,7 @@
     })
 
     // 위치보기 버튼 클릭 시
-    $("#div_locals").on("click", ".btn-primary", function(e) {
+    $("#div_locals").on("click", ".location", function(e) {
         let x = $(this).attr('x');
         let y = $(this).attr('y');
 
@@ -106,5 +117,26 @@
         }); 
         // 지도에 마커를 표시합니다
         marker.setMap(map);
+    })
+
+    // 즐겨찾기 버튼 클릭 시
+    $("#div_locals").on("click", ".favorite", async function(e) {
+        if (sessionStorage.getItem('email')) {
+            const local = JSON.parse($(this).attr('local'));
+            console.log('local', local);
+            const ref_favorite = ref (db, `favorite/${sessionStorage.getItem('uid')}/${local.id}`);
+            const snapshot = await get(ref_favorite);
+            console.log('snapshot', snapshot.val());
+
+            if (snapshot.val()) {
+                alert("즐겨찾기에 이미 등록되어있습니다.")
+            } else {
+                await set(ref_favorite, local);
+                alert("즐겨찾기에 등록되었습니다.")
+            }
+        } else {
+            sessionStorage.setItem("target", "/locals");
+            location.href = "/users/login";
+        }
     })
 </script>
