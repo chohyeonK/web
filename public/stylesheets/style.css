@@ -26,3 +26,11 @@ a {
   -webkit-line-clamp: 1; /* 한줄씩 나옴 */
   -webkit-box-orient: vertical;
 }
+
+.ellipsis2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 한줄씩 나옴 */
+  -webkit-box-orient: vertical;
+}

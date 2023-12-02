@@ -38,9 +38,9 @@
     const db = getFirestore(app);
     const email=sessionStorage.getItem('email');
 
-    let page =1;
-    let size=5;
-    let total=0;
+    let page = 1;
+    const size = 5;
+    let total = 0;
 
     getPosts();
 
@@ -71,8 +71,8 @@
         //현재페이지 목록 출력
         let rows=[];
         snapshot.docs.forEach((doc,index) => {
-            const start =(page-1)*size;
-            const end =(page*size)-1;
+            const start = (page-1)*size;
+            const end = (page*size)-1;
             if(index>=start && index <=end){
                 const row={index: index+1,id:doc.id, ...doc.data()}
                 rows.push(row);
